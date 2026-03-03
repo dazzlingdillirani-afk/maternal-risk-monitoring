@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Maternal Risk Monitoring</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ffe6f0, #ffb6d9);
+            text-align: center;
+            padding: 40px;
+        }
+        .container {
+            background: white;
+            width: 400px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        h2 { color: #d63384; }
+        input, select {
+            width: 90%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 2px solid #ff66a3;
+            border-radius: 8px;
+            outline: none;
+        }
+        button {
+            background-color: #ff4da6;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background-color: #d63384; }
+        #result { margin-top: 20px; font-weight: bold; color: #c2185b; }
+        a { color: #ff1493; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>💗 Pregnancy Risk Monitoring</h2>
+
+    Age: <input type="number" id="age" placeholder="Enter Age"><br>
+    Weight: <input type="number" id="weight" placeholder="Enter Weight (kg)"><br>
+    Symptoms: 
+    <select id="symptoms">
+        <option value="none">None</option>
+        <option value="mild">Mild (Swelling, Headache)</option>
+        <option value="severe">Severe (Bleeding, Severe Pain)</option>
+    </select><br><br>
+
+    <button onclick="checkRisk()">Check Risk</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+function checkRisk() {
+    const age = parseInt(document.getElementById("age").value);
+    const weight = parseInt(document.getElementById("weight").value);
+    const symptoms = document.getElementById("symptoms").value;
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            fetch("http://127.0.0.1:5000/analyze", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ age, weight, symptoms, latitude, longitude })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerHTML =
+                    "Risk Level: " + data.risk +
+                    "<br>Recommended Hospital: " + data.hospital +
+                    "<br><a href='" + data.map + "' target='_blank'>Open in Google Maps</a>";
+            });
+        });
+    } else {
+        alert("Geolocation not supported");
+    }
+}
+</script>
+
+</body>
+</html>
